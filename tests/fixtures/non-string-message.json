@@ -1,0 +1,12 @@
+{
+  "id": "non-string-message",
+  "input": {
+    "name": "Bad Type",
+    "message": {
+      "text": "Need automation"
+    }
+  },
+  "expected": {
+    "http_status": 400
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LeadQualificationResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "lead_score",
+    "category",
+    "score_breakdown",
+    "spam_detected",
+    "summary_reason",
+    "pain_points",
+    "suggested_reply",
+    "confidence",
+    "requires_human_review"
+  ],
+  "properties": {
+    "lead_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Hot",
+        "Warm",
+        "Cold",
+        "Spam"
+      ]
+    },
+    "score_breakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "service_fit",
+        "budget_authority",
+        "urgency",
+        "requirements_clarity"
+      ],
+      "properties": {
+        "service_fit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 40
+        },
+        "budget_authority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 25
+        },
+        "urgency": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "requirements_clarity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15
+        }
+      }
+    },
+    "spam_detected": {
+      "type": "boolean"
+    },
+    "summary_reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "pain_points": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "suggested_reply": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1500
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "requires_human_review": {
+      "type": "boolean"
+    }
+  }
+}

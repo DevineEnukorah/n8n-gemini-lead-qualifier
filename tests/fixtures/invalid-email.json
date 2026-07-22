@@ -1,0 +1,11 @@
+{
+  "id": "invalid-email",
+  "input": {
+    "name": "Bad Email",
+    "email": "not-an-email",
+    "message": "Need automation."
+  },
+  "expected": {
+    "http_status": 400
+  }
+}

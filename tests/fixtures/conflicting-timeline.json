@@ -1,0 +1,15 @@
+{
+  "id": "conflicting-timeline",
+  "input": {
+    "name": "Conflicted Buyer",
+    "email": "buyer@example.com",
+    "company": "Example Inc",
+    "message": "This is urgent and must launch tomorrow, but we are only researching ideas for next year.",
+    "budget": "Not approved",
+    "timeline": "tomorrow or next year",
+    "source": "website"
+  },
+  "expected": {
+    "human_review": true
+  }
+}

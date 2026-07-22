@@ -1,0 +1,17 @@
+{
+  "id": "warm-no-budget",
+  "input": {
+    "name": "Tunde Okafor",
+    "email": "tunde@example.com",
+    "company": "RetailCo",
+    "message": "We are exploring an AI assistant to classify support tickets and route them to the right team.",
+    "budget": "",
+    "timeline": "this quarter",
+    "source": "referral"
+  },
+  "expected": {
+    "category": "Warm",
+    "score_min": 60,
+    "score_max": 79
+  }
+}

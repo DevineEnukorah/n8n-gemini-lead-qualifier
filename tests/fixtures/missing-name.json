@@ -1,0 +1,10 @@
+{
+  "id": "missing-name",
+  "input": {
+    "email": "x@example.com",
+    "message": "Need automation."
+  },
+  "expected": {
+    "http_status": 400
+  }
+}

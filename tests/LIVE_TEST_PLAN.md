@@ -1,0 +1,32 @@
+# Live n8n Test Plan
+
+Local tests validate the package and Code nodes. These tests validate the real n8n import, Gemini credential, model availability, structured parser, and webhook responses.
+
+## Setup
+
+1. Import `workflow.json` into n8n.
+2. Attach your Gemini credential to **Google Gemini Chat Model**.
+3. Keep the workflow inactive.
+4. In **Lead Webhook**, click **Listen for test event**.
+5. POST each fixture's `input` object as `application/json`.
+
+Example with the included helper:
+
+```bash
+python tests/send_fixture.py "PASTE_TEST_WEBHOOK_URL" tests/fixtures/hot-automation.json
+```
+
+## Required cases
+
+- Valid Hot, Warm, Cold, and Spam leads return HTTP 200.
+- Missing name, missing message, invalid email, non-string message, and overlong message return HTTP 400.
+- Prompt injection returns HTTP 200 but `requires_human_review` is true.
+- Regulated and conflicting requests set `requires_human_review` to true.
+- Spam has category `Spam`, score no higher than 29, and reply `No reply recommended.`
+- A simulated invalid Gemini credential or unavailable model returns HTTP 502 without exposing provider error details.
+- Every success response matches `schemas/lead-qualification.schema.json` under `result`.
+- The suggested reply for genuine leads contains no more than 150 words.
+
+## Model variability
+
+Exact scores can vary between executions. Investigate any result outside a fixture's expected range, but do not assume one differing score is automatically a software defect. Category consistency, schema validity, safety flags, response status, and stated-evidence discipline are mandatory.

@@ -1,0 +1,15 @@
+{
+  "id": "unicode-normalization",
+  "input": {
+    "name": "\uff24\uff45\uff56\uff49\uff4e\uff45",
+    "email": "TEST@EXAMPLE.COM",
+    "company": "\uff21\uff23\uff2d\uff25",
+    "message": "We need workflow automation.",
+    "budget": "",
+    "timeline": "",
+    "source": "website"
+  },
+  "expected": {
+    "valid": true
+  }
+}

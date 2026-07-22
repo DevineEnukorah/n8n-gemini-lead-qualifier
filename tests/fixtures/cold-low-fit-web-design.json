@@ -1,0 +1,16 @@
+{
+  "id": "cold-low-fit-web-design",
+  "input": {
+    "name": "John Client",
+    "email": "john@example.com",
+    "company": "Local Shop",
+    "message": "I need a basic five-page website and a new logo.",
+    "budget": "$500",
+    "timeline": "three months",
+    "source": "website"
+  },
+  "expected": {
+    "category": "Cold",
+    "score_max": 59
+  }
+}

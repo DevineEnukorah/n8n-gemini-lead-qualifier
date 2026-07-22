@@ -1,0 +1,10 @@
+{
+  "id": "missing-message",
+  "input": {
+    "name": "No Message",
+    "email": "x@example.com"
+  },
+  "expected": {
+    "http_status": 400
+  }
+}
