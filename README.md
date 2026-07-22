@@ -97,6 +97,17 @@ Local testing cannot execute the live Google Gemini API without a valid credenti
 
 Lead data is untrusted. Do not submit passwords, API keys, medical records, financial account data, or other sensitive personal data. Prompt-injection detection is heuristic, not comprehensive. Human review remains required for ambiguous, regulated, low-confidence, or consequential cases.
 
+### AI provider failure responses
+
+Successful qualifications return HTTP 200 with a JSON response.
+
+Input validation failures return HTTP 400 with a JSON response.
+
+Some Google Gemini credential, unsupported-model, connection, or AI sub-node failures may be handled directly by n8n before the workflow reaches its custom error branch. In those cases, the webhook may return HTTP 502 with a plain-text response such as:
+
+```text
+error code: 502
+
 ## Licence
 
 MIT. See `LICENSE`.
