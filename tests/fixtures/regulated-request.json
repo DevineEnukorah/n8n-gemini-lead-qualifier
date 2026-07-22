@@ -1,0 +1,15 @@
+{
+  "id": "regulated-request",
+  "input": {
+    "name": "Compliance Lead",
+    "email": "legal@example.com",
+    "company": "HealthCo",
+    "message": "We want an AI workflow to triage patient medical records and recommend treatment priority.",
+    "budget": "$20,000",
+    "timeline": "six weeks",
+    "source": "website"
+  },
+  "expected": {
+    "human_review": true
+  }
+}

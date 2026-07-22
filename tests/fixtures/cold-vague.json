@@ -1,0 +1,16 @@
+{
+  "id": "cold-vague",
+  "input": {
+    "name": "Mira James",
+    "email": "mira@example.com",
+    "company": "",
+    "message": "Can you tell me what automation services you provide?",
+    "budget": "",
+    "timeline": "",
+    "source": "website"
+  },
+  "expected": {
+    "category": "Cold",
+    "score_max": 59
+  }
+}

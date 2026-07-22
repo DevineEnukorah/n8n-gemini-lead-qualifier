@@ -1,0 +1,11 @@
+{
+  "id": "xss-content",
+  "input": {
+    "name": "<script>alert(1)</script>",
+    "email": "safe@example.com",
+    "message": "We need an AI assistant. <img src=x onerror=alert(1)>"
+  },
+  "expected": {
+    "valid": true
+  }
+}

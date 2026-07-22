@@ -1,0 +1,12 @@
+{
+  "id": "no-email",
+  "input": {
+    "name": "Anonymous Buyer",
+    "company": "SmallCo",
+    "message": "We need to automate order notifications.",
+    "timeline": "two months"
+  },
+  "expected": {
+    "valid": true
+  }
+}

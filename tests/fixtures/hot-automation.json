@@ -1,0 +1,16 @@
+{
+  "id": "hot-automation",
+  "input": {
+    "name": "Ada Bello",
+    "email": "ada@example.com",
+    "company": "FinServe Ltd",
+    "message": "We need to automate invoice reconciliation across three systems. I approve the project and need a pilot within four weeks.",
+    "budget": "$8,000-$12,000",
+    "timeline": "4 weeks",
+    "source": "website"
+  },
+  "expected": {
+    "category": "Hot",
+    "score_min": 80
+  }
+}

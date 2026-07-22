@@ -1,0 +1,16 @@
+{
+  "id": "spam",
+  "input": {
+    "name": "Promo Bot",
+    "email": "promo@example.com",
+    "company": "",
+    "message": "Buy cheap followers now. Visit our promotion service.",
+    "budget": "",
+    "timeline": "",
+    "source": "unknown"
+  },
+  "expected": {
+    "category": "Spam",
+    "score_max": 29
+  }
+}
