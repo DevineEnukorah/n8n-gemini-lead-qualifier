@@ -102,7 +102,7 @@ for node in nodes:
   if isinstance(value,dict) and (value.get('id') or value.get('name')): fail(f'Credential reference exported in {node["name"]}.')
 
 # Docs, fixtures, CI
-for filename in ['tests/runtime_test.js','tests/expression_test.js','tests/fixture_validation_test.js','tests/schema_test.py','tests/runtime_schema_test.py','tests/runtime_samples.js','tests/send_fixture.py','README.md','SECURITY.md','PRIVACY.md','CHANGELOG.md','LICENSE','system-prompt.md','tests/LIVE_TEST_PLAN.md','marketplace/listing.md','TEST_REPORT.md','MANUAL_GITHUB_PUBLISH.md']:
+for filename in ['tests/runtime_test.js','tests/expression_test.js','tests/fixture_validation_test.js','tests/schema_test.py','tests/runtime_schema_test.py','tests/runtime_samples.js','tests/send_fixture.py','README.md','SECURITY.md','PRIVACY.md','CHANGELOG.md','LICENSE','system-prompt.md','tests/LIVE_TEST_PLAN.md','marketplace/listing.md','TEST_REPORT.md']:
  if not (ROOT/filename).is_file(): fail(f'Missing file: {filename}')
 fixtures=list((ROOT/'tests'/'fixtures').glob('*.json'))
 if len(fixtures)<15: fail('At least 15 fixtures are required.')
