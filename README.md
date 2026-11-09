@@ -108,9 +108,47 @@ The suite runs on every push through GitHub Actions. A clean run of `python test
 
 The 16 fixtures cover hot, warm, cold, and spam leads, plus invalid email, missing fields, non-string input, overlong messages, Unicode normalization, XSS content, prompt injection, regulated requests, and conflicting timelines. See [`TEST_REPORT.md`](TEST_REPORT.md) for the full audit.
 
-### Live test with Gemini (status: not yet run)
+### Live test with Gemini (run 9 November 2026: 16 of 16 passed)
 
-Local tests cannot call the Gemini API. The live model call, structured parser, and webhook responses must be checked inside n8n with a real credential, following [`tests/LIVE_TEST_PLAN.md`](tests/LIVE_TEST_PLAN.md). Model scores can vary between runs, so the live plan checks categories, schema validity, safety flags, and HTTP status codes rather than exact numbers.
+Local tests cannot call the Gemini API, so the live model call, structured parser, and webhook responses were checked inside n8n with a real credential, following [`tests/LIVE_TEST_PLAN.md`](tests/LIVE_TEST_PLAN.md).
+
+**Setup:** workflow version 1.1.0 (commit `434be05`), n8n 2.46.7 self-hosted on Windows with Node.js 24.22.2, model `models/gemini-3.1-flash-lite` at temperature 0.1. The workflow stayed inactive. Each fixture was sent once to the test webhook with `tests/send_fixture.py`.
+
+| Fixture | HTTP | Category | Score | Human review | Confidence | Expected | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| hot-automation | 200 | Hot | 100 | false | 95 | Hot, score ≥ 80 | Pass |
+| warm-no-budget | 200 | Warm | 60 | true | 90 | Warm, score 60 to 79 | Pass |
+| cold-vague | 200 | Cold | 20 | true | 75 | Cold, score ≤ 59 | Pass |
+| cold-low-fit-web-design | 200 | Cold | 30 | false | 95 | Cold, score ≤ 59 | Pass |
+| spam | 200 | Spam | 0 | false | 100 | Spam, score ≤ 29, "No reply recommended." | Pass |
+| prompt-injection | 200 | Spam | 0 | true | 60 | Human review, confidence ≤ 60 | Pass |
+| regulated-request | 200 | Hot | 85 | true | 75 | Human review | Pass |
+| conflicting-timeline | 200 | Cold | 10 | true | 75 | Human review | Pass |
+| no-email | 200 | Cold | 55 | true | 85 | Valid response | Pass |
+| unicode-normalization | 200 | Cold | 37 | true | 75 | Valid response | Pass |
+| xss-content | 200 | Cold | 32 | true | 75 | Valid response, no markup returned | Pass |
+| missing-name | 400 | n/a | n/a | n/a | n/a | HTTP 400 | Pass |
+| missing-message | 400 | n/a | n/a | n/a | n/a | HTTP 400 | Pass |
+| invalid-email | 400 | n/a | n/a | n/a | n/a | HTTP 400 | Pass |
+| non-string-message | 400 | n/a | n/a | n/a | n/a | HTTP 400 | Pass |
+| overlong-message | 400 | n/a | n/a | n/a | n/a | HTTP 400 | Pass |
+
+All 11 successful responses validated against [`schemas/lead-qualification.schema.json`](schemas/lead-qualification.schema.json). Each HTTP 400 response named the failing field (for example `"name is required"`).
+
+**Failure path:** with the model temporarily set to an invalid ID, the webhook returned HTTP 502 with `"error": "AI_PROCESSING_ERROR"` and a generic retry message. The response contained no provider name, model name, API host, or stack trace. After the model was restored, `hot-automation` returned HTTP 200, Hot, score 100 again.
+
+**Observations:**
+
+- **The code overrode the model where it should.** Gemini scored `regulated-request` (a medical records request) as Hot at 85, but the code still forced human review. `prompt-injection` came back as Spam with confidence capped at 60 and review forced, so the embedded instructions did not take over the output.
+- **Two results sit close to category boundaries.** `warm-no-budget` scored exactly 60, the lowest Warm score, and `no-email` scored 55, just below Warm. Both were in range on this run, but repeated runs could cross the boundary.
+- **This was one run per fixture.** Categories, schema validity, safety flags, and status codes all passed. Exact scores are not guaranteed to repeat.
+
+<!-- Screenshots: add once captured, with names and emails removed.
+![n8n execution of a Hot lead](docs/screenshots/live-hot-lead.png)
+![n8n execution of a regulated request forced to human review](docs/screenshots/live-human-review.png)
+-->
+
+The live test plan checks categories, schema validity, safety flags, and HTTP status codes rather than exact numbers, because model scores can vary between runs.
 
 ## Installation
 
