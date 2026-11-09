@@ -143,10 +143,13 @@ All 11 successful responses validated against [`schemas/lead-qualification.schem
 - **Two results sit close to category boundaries.** `warm-no-budget` scored exactly 60, the lowest Warm score, and `no-email` scored 55, just below Warm. Both were in range on this run, but repeated runs could cross the boundary.
 - **This was one run per fixture.** Categories, schema validity, safety flags, and status codes all passed. Exact scores are not guaranteed to repeat.
 
-<!-- Screenshots: add once captured, with names and emails removed.
-![n8n execution of a Hot lead](docs/screenshots/live-hot-lead.png)
-![n8n execution of a regulated request forced to human review](docs/screenshots/live-human-review.png)
--->
+**Execution #1, `hot-automation`:** Gemini returned four component scores, the code summed them to 100 and set the category to Hot, and no human review was needed.
+
+![n8n execution #1: hot-automation lead scored Hot at 100 with requires_human_review false](docs/screenshots/live-hot-lead.png)
+
+**Execution #7, `regulated-request`:** Gemini scored a medical-records request as Hot at 85, and the code still set `requires_human_review` to true.
+
+![n8n execution #7: regulated medical-records request scored Hot at 85 with requires_human_review true](docs/screenshots/live-human-review.png)
 
 The live test plan checks categories, schema validity, safety flags, and HTTP status codes rather than exact numbers, because model scores can vary between runs.
 
