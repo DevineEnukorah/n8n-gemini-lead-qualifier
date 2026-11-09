@@ -1,24 +1,39 @@
-# Gemini Lead Qualification Agent
+# AI Lead Qualification and Reply Assistant
 
-Production-oriented n8n workflow for validating inbound lead data, assessing sales fit with Google Gemini, enforcing structured model output, calculating the final score deterministically, and returning a stable JSON API response.
+[![Validate package](https://github.com/DevineEnukorah/n8n-gemini-lead-qualifier/actions/workflows/validate.yml/badge.svg)](https://github.com/DevineEnukorah/n8n-gemini-lead-qualifier/actions/workflows/validate.yml)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Status](https://img.shields.io/badge/status-working%20prototype-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## Version
+An n8n workflow that receives an inbound sales lead, validates it, asks Google Gemini for a structured assessment, and returns a scored, review-ready JSON result with a suggested reply.
 
-`1.1.0`
+The design principle is simple: **the language model advises, the code decides.** Gemini proposes bounded component scores and text. Deterministic code validates the input, calculates the final score and category, enforces safety rules, and decides when a human must review the result.
 
-## Implemented workflow
+![n8n workflow: webhook, validation, Gemini qualification with structured output parser, and three HTTP response paths](workflow-diagram.jpeg)
 
-1. Receives a JSON POST request through an n8n Webhook.
-2. Validates field types, required values, email format, field lengths, and total payload size.
-3. Normalizes Unicode and removes control characters.
-4. Detects common prompt-injection patterns and carries the security flag through the workflow.
-5. Requests a structured scoring breakdown from Google Gemini.
-6. Returns a controlled HTTP 502 response when model execution or parsing fails.
-7. Calculates the total score and category in code instead of trusting the model's arithmetic.
-8. Enforces confidence, category-boundary, spam, and prompt-injection review rules.
-9. Returns HTTP 200, 400, or 502 JSON responses with no-store security headers.
+## What it does
 
-The workflow does not automatically reject leads, send email, update a CRM, or archive submissions.
+1. Receives a JSON `POST` request through an n8n webhook.
+2. Validates field types, required fields, email format, field lengths, and total payload size.
+3. Normalizes Unicode and strips control characters.
+4. Flags common prompt-injection patterns and carries that flag through the workflow.
+5. Requests a structured scoring breakdown from Gemini, enforced by an output parser.
+6. Calculates the total score and the Hot, Warm, Cold, or Spam category in code rather than trusting the model's arithmetic.
+7. Forces human review for prompt-injection, spam, low-confidence, regulated, and borderline cases.
+8. Returns HTTP 200, 400, or 502 JSON responses with `no-store` security headers.
+
+The workflow deliberately does **not** reject leads, send email, update a CRM, or archive submissions. Every consequential action stays with a person.
+
+## Design decisions
+
+| Problem | Decision |
+| --- | --- |
+| LLMs make arithmetic and threshold errors | The model returns four bounded component scores; code sums them and assigns the category. |
+| Free-text model output is fragile | A structured output parser and JSON Schema enforce the response contract. |
+| Lead text is untrusted input | Type, length, Unicode, and payload checks run before the model sees anything. |
+| Prompt injection cannot be fully prevented | Detected cases are flagged, confidence is capped at 60, and human review is forced. |
+| Model or provider failures | A controlled HTTP 502 path returns a generic error without exposing provider details. |
+| Model-generated markup | HTML and script markup are stripped from returned text. |
 
 ## Input contract
 
@@ -36,9 +51,11 @@ All supplied fields must be strings. `name` and `message` are required.
 }
 ```
 
-Limits: name 120, email 254, company 160, message 5000, budget 120, timeline 120, source 120 characters. Total JSON payload limit is 12,000 characters.
+Character limits: name 120, email 254, company 160, message 5,000, budget 120, timeline 120, source 120. The total JSON payload limit is 12,000 characters.
 
-## Success response
+## Response shape
+
+The example below is illustrative and shows the contract, not a recorded live result.
 
 ```json
 {
@@ -69,45 +86,68 @@ Limits: name 120, email 254, company 160, message 5000, budget 120, timeline 120
 }
 ```
 
-## Installation and live testing
+## Testing
 
-1. Import `workflow.json` into a current n8n installation.
-2. Open **Google Gemini Chat Model** and attach your Gemini credential.
-3. Confirm `models/gemini-3.1-flash-lite` appears in the model list. Select a currently supported Gemini model if your account does not expose it.
-4. Do not activate the workflow yet.
-5. Open **Lead Webhook**, select **Listen for test event**, and copy the test URL.
-6. Follow `tests/LIVE_TEST_PLAN.md` and submit every fixture. The `tests/send_fixture.py` helper sends only the fixture input object.
-7. Review all output, especially boundary cases and human-review flags.
-8. Configure webhook authentication, network rate limiting, retention, monitoring, and privacy notices before publishing the production URL.
-9. Activate only after all live tests pass.
-
-## Local tests
+### Local test suite (no credentials needed)
 
 ```bash
+pip install -r requirements-dev.txt
 python tests/run_all.py
 ```
 
-The local suite validates the workflow graph, UUIDs, node configuration, schemas, expressions, response codes, headers, documentation, fixture structure, Code-node behavior, 10,000 deterministic fuzz iterations per standard run, and invalid-schema mutations.
+The suite runs on every push through GitHub Actions. A clean run of `python tests/run_all.py` on 9 November 2026 (Python 3.12.3, Node.js 22.23.4) passed every stage:
 
-## Important limitation
+| Stage | Result |
+| --- | --- |
+| Package and graph validation | 11 nodes, 16 fixtures, graph and security checks passed |
+| JSON Schema mutation tests | 11 invalid mutations rejected |
+| Runtime-to-schema bridge | 5,000 generated outputs validated |
+| n8n expression tests | 7 expressions compiled and evaluated |
+| Fixture validation | 16 fixtures passed |
+| Code-node runtime tests | 10,000 fuzz iterations plus fixed cases passed |
 
-Local testing cannot execute the live Google Gemini API without a valid credential and an n8n runtime. The final model call must therefore be tested manually in n8n before activation. This repository includes a complete live test plan for that step.
+The 16 fixtures cover hot, warm, cold, and spam leads, plus invalid email, missing fields, non-string input, overlong messages, Unicode normalization, XSS content, prompt injection, regulated requests, and conflicting timelines. See [`TEST_REPORT.md`](TEST_REPORT.md) for the full audit.
 
-## Security and privacy
+### Live test with Gemini (status: not yet run)
 
-Lead data is untrusted. Do not submit passwords, API keys, medical records, financial account data, or other sensitive personal data. Prompt-injection detection is heuristic, not comprehensive. Human review remains required for ambiguous, regulated, low-confidence, or consequential cases.
+Local tests cannot call the Gemini API. The live model call, structured parser, and webhook responses must be checked inside n8n with a real credential, following [`tests/LIVE_TEST_PLAN.md`](tests/LIVE_TEST_PLAN.md). Model scores can vary between runs, so the live plan checks categories, schema validity, safety flags, and HTTP status codes rather than exact numbers.
 
-### AI provider failure responses
+## Installation
 
-Successful qualifications return HTTP 200 with a JSON response.
+1. Import `workflow.json` into a current n8n installation.
+2. Open **Google Gemini Chat Model** and attach your Gemini credential.
+3. Confirm the configured model (`models/gemini-3.1-flash-lite`) is available to your account, or select a currently supported Gemini model.
+4. Keep the workflow inactive.
+5. Open **Lead Webhook**, select **Listen for test event**, and copy the test URL.
+6. Send each fixture with the helper: `python tests/send_fixture.py "TEST_WEBHOOK_URL" tests/fixtures/hot-automation.json`
+7. Review every response, especially boundary cases and human-review flags.
+8. Before using a production URL, add webhook authentication, rate limiting, data retention rules, monitoring, and a privacy notice.
+9. Activate only after all live tests pass.
 
-Input validation failures return HTTP 400 with a JSON response.
-
-Some Google Gemini credential, unsupported-model, connection, or AI sub-node failures may be handled directly by n8n before the workflow reaches its custom error branch. In those cases, the webhook may return HTTP 502 with a plain-text response such as:
+## Repository structure
 
 ```text
-error code: 502
+workflow.json          n8n workflow export (no credentials included)
+system-prompt.md       Prompt sent to Gemini
+schemas/               JSON Schemas for the model output and API response
+tests/                 Local test suite, 16 fixtures, and the live test plan
+TEST_REPORT.md         Audit and test report for version 1.1.0
+CHANGELOG.md           Version history
+SECURITY.md            Security reporting
+PRIVACY.md             Data-handling notes
+```
 
-## Licence
+## Known limitations
 
-MIT. See `LICENSE`.
+- Prompt-injection detection is heuristic, not comprehensive.
+- Some Gemini credential, model, or connection failures are handled by n8n before the custom error branch. In those cases the webhook still returns HTTP 502, but as plain text (for example `error code: 502`) rather than JSON.
+- Scores depend on the model and can vary between runs.
+- Do not submit passwords, API keys, medical records, financial account data, or other sensitive personal data.
+
+## Author
+
+Built by **Devine Enukorah**, Abuja, Nigeria. [Portfolio](https://devineenukorah.github.io/professional-portfolio/) · [LinkedIn](https://www.linkedin.com/in/DevineEnukorah/)
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
